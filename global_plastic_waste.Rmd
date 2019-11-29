@@ -1,0 +1,89 @@
+---
+title: "Global Plastic Waste"
+author: "Jannik Buhr"
+date: "11/29/2019"
+output:
+  html_document:
+    code_folding: hide
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE,
+                      message = FALSE)
+```
+
+## Exploration
+
+```{r}
+library(tidyverse)
+
+theme_set(theme_minimal())
+```
+
+```{r}
+# data import and cleaning
+coast_vs_waste <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-05-21/coastal-population-vs-mismanaged-plastic.csv") %>%
+  janitor::clean_names() %>% 
+  filter(!is.na(mismanaged_plastic_waste_tonnes))
+
+mismanaged_vs_gdp <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-05-21/per-capita-mismanaged-plastic-waste-vs-gdp-per-capita.csv") %>% 
+  janitor::clean_names() %>%
+  filter(!is.na(per_capita_mismanaged_plastic_waste_kilograms_per_person_per_day)) %>% 
+  rename(
+    gdp = gdp_per_capita_ppp_constant_2011_international_rate,
+    mismanaged = per_capita_mismanaged_plastic_waste_kilograms_per_person_per_day,
+    pop = total_population_gapminder
+  )
+
+waste_vs_gdp <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-05-21/per-capita-plastic-waste-vs-gdp-per-capita.csv") %>% 
+  janitor::clean_names() %>% 
+  filter(!is.na(per_capita_plastic_waste_kilograms_per_person_per_day))
+```
+
+
+
+```{r}
+mismanaged_vs_gdp %>% 
+  ggplot(aes(gdp,
+             mismanaged)) +
+  geom_point(aes(size = pop)) +
+  geom_text(aes(label = entity), check_overlap = TRUE, color = "grey30") +
+  scale_x_log10(labels = scales::dollar_format()) +
+  scale_y_log10(labels = scales::percent_format()) +
+  labs(x = "GDP per capita",
+       y = "Percent mismanaged waste per capita",
+       subtitle = "Size represents total population") +
+  guides(size = "none")
+```
+
+```{r}
+mismanaged_vs_gdp %>% 
+  arrange(desc(pop))
+```
+
+
+```{r}
+plt <- mismanaged_vs_gdp %>% 
+  ggplot(aes(gdp,
+             mismanaged,
+             label = entity)) +
+  geom_point(aes(size = pop)) +
+  scale_x_log10(labels = scales::dollar_format()) +
+  scale_y_log10(labels = scales::percent_format()) +
+  labs(x = "GDP per capita",
+       y = "Percent mismanaged waste per capita",
+       subtitle = "Size represents total population",
+       title = "Test",
+       caption = "test") +
+  guides(size = "none")
+```
+
+```{r}
+plotly::ggplotly(plt)
+```
+
+
+
+
