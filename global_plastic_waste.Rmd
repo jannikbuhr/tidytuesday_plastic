@@ -85,5 +85,19 @@ plotly::ggplotly(plt)
 ```
 
 
+```{r}
+world <- map_data("world") %>% 
+  as_tibble() %>% 
+  filter(region != "Antarctica")
+
+
+world %>% 
+  left_join(rename(mismanaged_vs_gdp, region = entity)) %>% 
+  ggplot(aes(long, lat, group = group, fill = mismanaged)) +
+  geom_polygon() +
+  coord_map(xlim = c(-180, 180))
+
+```
+
 
 

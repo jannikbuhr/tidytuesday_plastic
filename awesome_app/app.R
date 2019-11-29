@@ -28,10 +28,11 @@ ui <- fluidPage(
                 multiple = TRUE
             )
         ),
-        
+
         # Show a plot of the generated distribution
         mainPanel(
-            plotOutput("misPlt")
+            plotOutput("misPlt"),
+            plotOutput("map")
         )
     )
 )
@@ -58,7 +59,22 @@ server <- function(input, output) {
             filter(entity %in% input$countries)
         
         plt +
+            geom_point(data = label_data, aes(size = pop), color = "red") +
             geom_text(data = label_data)
+    })
+    
+    output$map <- renderPlot({
+        world <- map_data("world") %>% 
+            as_tibble() %>% 
+            filter(region != "Antarctica")
+        
+        
+        world %>% 
+            left_join(rename(mismanaged_vs_gdp, region = entity)) %>% 
+            ggplot(aes(long, lat, group = group, fill = mismanaged)) +
+            geom_polygon() +
+            coord_map(xlim = c(-180, 180))
+        
     })
 }
 
